@@ -1,0 +1,77 @@
+# ejercicio 4: generar archivo excel y leerlo con pandas usando programación funcional
+
+import pandas as pd
+from functools import reduce
+
+def generar_excel(nombre_archivo='datos_estudiantes.xlsx'):
+    # datos de ejemplo de estudiantes
+    datos = {
+        'Nombre Estudiante': ['Jorge Salgueiro', 'Kevin Calani', 'Rodrigo Herrera', 'Henrry Lima', 'Jose Chauca'],
+        'Edad Estudiante': [20, 22, 21, 23, 20],
+        'No. de Lab completados': [8, 10, 7, 9, 10],
+        'Promedio': [85.5, 92.3, 78.9, 88.7, 95.2]
+    }
+    
+    # crear dataframe
+    df = pd.DataFrame(datos)
+    
+    # guardar en excel
+    df.to_excel(nombre_archivo, index=False, engine='openpyxl')
+    print(f"✓ archivo excel '{nombre_archivo}' creado exitosamente!\n")
+    
+    return nombre_archivo
+
+def leer_excel(nombre_archivo):
+    # leer el archivo excel
+    df = pd.read_excel(nombre_archivo, engine='openpyxl')
+    
+    print("=" * 70)
+    print("DATOS DE ESTUDIANTES")
+    print("=" * 70)
+    print(df.to_string(index=False))
+    print("=" * 70)
+    
+    return df
+
+def mostrar_estadisticas(df):
+    # usando map para mostrar info de cada estudiante
+    print("\ndetalles de cada estudiante:")
+    print("-" * 70)
+    list(map(lambda fila: print(f"• {fila['Nombre Estudiante']}, edad: {fila['Edad Estudiante']}, "
+                                f"labs: {fila['No. de Lab completados']}, promedio: {fila['Promedio']:.2f}"),
+             [fila for _, fila in df.iterrows()]))
+    
+    # usando reduce para calcular totales
+    print("\n" + "-" * 70)
+    print("estadísticas generales:")
+    print("-" * 70)
+    
+    # total de labs completados
+    total_labs = reduce(lambda x, y: x + y, df['No. de Lab completados'])
+    print(f"• total de labs completados: {total_labs}")
+    
+    # promedio de edad
+    promedio_edad = reduce(lambda x, y: x + y, df['Edad Estudiante']) / len(df)
+    print(f"• edad promedio: {promedio_edad:.2f} años")
+    
+    # promedio general de calificaciones
+    promedio_general = reduce(lambda x, y: x + y, df['Promedio']) / len(df)
+    print(f"• promedio general: {promedio_general:.2f}")
+    
+    # filtrar estudiantes con promedio >= 85
+    mejores = list(filter(lambda fila: fila['Promedio'] >= 85, 
+                         [fila for _, fila in df.iterrows()]))
+    print(f"\n• estudiantes con promedio >= 85:")
+    for estudiante in mejores:
+        print(f"  - {estudiante['Nombre Estudiante']}: {estudiante['Promedio']:.2f}")
+    
+    print("=" * 70)
+
+def main():
+    # ejecutar todas las operaciones
+    archivo = generar_excel()
+    df = leer_excel(archivo)
+    mostrar_estadisticas(df)
+
+if __name__ == "__main__":
+    main()
